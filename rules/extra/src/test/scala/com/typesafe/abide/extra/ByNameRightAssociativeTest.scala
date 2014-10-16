@@ -1,6 +1,6 @@
-package com.typesafe.abide.extra.test
+package com.typesafe.abide.extra
 
-import scala.tools.abide.test.traversal._
+import scala.tools.abide.traversal._
 import com.typesafe.abide.extra._
 
 class ByNameRightAssociativeTest extends TraversalTest {
