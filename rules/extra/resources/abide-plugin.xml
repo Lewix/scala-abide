@@ -1,4 +1,5 @@
 <plugin>
   <rule class="com.typesafe.abide.extra.FixedNameOverrides" />
   <rule class="com.typesafe.abide.extra.ByNameRightAssociative" />
+  <rule class="com.typesafe.abide.extra.NullaryOverride" />
 </plugin>
