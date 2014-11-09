@@ -15,7 +15,8 @@ object AbideBuild extends Build {
     libraryDependencies          <+= (scalaVersion)("org.scala-lang" % "scala-compiler" % _ % "provided"),
     libraryDependencies          <+= (scalaVersion)("org.scala-lang" % "scala-reflect" % _ % "provided"),
     libraryDependencies           += "org.scalatest" %% "scalatest" % "2.1.7" % "test",
-    publishArtifact in Test       := false
+    publishArtifact in Test       := false,
+    fork in Test                  := true
   )
 
   lazy val macros = Project("abide-macros", file("macros")).settings(sharedSettings : _*)
