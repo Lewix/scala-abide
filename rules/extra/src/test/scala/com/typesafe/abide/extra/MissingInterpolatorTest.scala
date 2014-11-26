@@ -74,17 +74,13 @@ class MissingInterpolatorTest extends TraversalTest {
 
   it should "not be valid if it contains quoted names of methods which take no explicit arguments" in {
     val tree = fromString("""
-      package object test {
+      class G {
         def greppo(n: Int) = ???
         def zappos(n: Int)(implicit ord: math.Ordering[Int]) = ???
         def hippo(implicit n: Int) = ???
-      }
-      package test {
-        class G {
-          def g = "$greppo takes an arg" // no warn
-          def z = "$zappos takes an arg too" // no warn
-          def h = "$hippo takes an implicit" // warn
-        }
+        def g = "$greppo takes an arg" // no warn
+        def z = "$zappos takes an arg too" // no warn
+        def h = "$hippo takes an implicit" // warn
       }
     """)
 
@@ -105,7 +101,7 @@ class MissingInterpolatorTest extends TraversalTest {
     global.ask { () => apply(rule)(tree).size should be(0) }
   }
 
-  it should "be valid in annotations if it contains quoted names of objects not in scope" in {
+  it should "be valid in implicitNotFound annotations if it contains quoted names of objects not in scope" in {
     val tree = fromString("""
       package test {
         @scala.annotation.implicitNotFound(msg = "Cannot construct a collection of type ${To} with elements of type ${Elem} based on a collection of type ${From}.") // no warn
@@ -128,22 +124,22 @@ class MissingInterpolatorTest extends TraversalTest {
 
   it should "not be valid if it contains quoted names of methods with one overloaded alternatives which take no explicit arguments" in {
     val tree = fromString("""
-        class Doo {
-          def beppo(i: Int) = 8 * i
-          def beppo = 8
-          class Dah extends Doo {
-            def f = "$beppo was a marx bros who saw dollars."  // warn
-          }
+      class Doo {
+        def beppo(i: Int) = 8 * i
+        def beppo = 8
+        class Dah extends Doo {
+          def f = "$beppo was a marx bros who saw dollars."  // warn
         }
+        def g = "$beppo is overloaded" // warn
       }
     """)
 
-    global.ask { () => apply(rule)(tree).size should be(1) }
+    global.ask { () => apply(rule)(tree).size should be(2) }
   }
 
   it should "be valid if it contains quoted names of methods which take curried explicit arguments" in {
     val tree = fromString("""
-      package curry1 {
+      class Curry1 {
         def bunko()(x: Int): Int = 5
         def f1 = "I was picked up by the $bunko squad" // no warn
       }
@@ -154,7 +150,7 @@ class MissingInterpolatorTest extends TraversalTest {
 
   it should "not be valid if it contains quoted names of unitary methods" in {
     val tree = fromString("""
-      package curry2 {
+      class Curry2 {
         def groucho(): Int = 5
         def f2 = "I salute $groucho" // warn
       }
@@ -165,7 +161,7 @@ class MissingInterpolatorTest extends TraversalTest {
 
   it should "not be valid if it contains quoted names of methods with many empty argument lists" in {
     val tree = fromString("""
-      package curry3 {
+      class Curry3 {
         def dingo()()()()()(): Int = 5 // kind of nuts this can be evaluated with just 'dingo', but okay
         def f3 = "I even salute $dingo" // warn
       }
@@ -176,7 +172,7 @@ class MissingInterpolatorTest extends TraversalTest {
 
   it should "not be valid if it contains quoted names of methods with many empty argument lists and type arguments" in {
     val tree = fromString("""
-      package curry4 {
+      class Curry4 {
         def calico[T1, T2]()()(): Int = 5 // even nutsier
         def f4 = "I also salute $calico" // warn 9
       }
@@ -187,13 +183,28 @@ class MissingInterpolatorTest extends TraversalTest {
 
   it should "be valid if it contains quoted names of methods with at least one non-empty argument list" in {
     val tree = fromString("""
-      package curry5 {
+      class Curry5 {
         def palomino[T1, T2]()(y: Int = 5)(): Int = 5 // even nutsier
         def f5 = "I draw the line at $palomino" // no warn
       }
     """)
 
     global.ask { () => apply(rule)(tree).size should be(0) }
+  }
+
+  it should "not be valid if it contains quoted names of values defined in the same method" in {
+    val tree = fromString("""
+      class Test {
+        def method() = {
+          val x = 3
+          def y = 5
+          val s = "1 + 2 + $x"
+          "1 + 2 + $y"
+        }
+      }
+    """)
+
+    global.ask { () => apply(rule)(tree).size should be(2) }
   }
 }
 
