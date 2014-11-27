@@ -124,3 +124,45 @@ name : **nullary-unit**
 source : [NullaryUnit](/rules/core/src/main/scala/com/typesafe/abide/core/NullaryUnit.scala)
 
 It is not recommended to define methods with side-effects which take no arguments, as it is easy to accidentally invoke those side-effects.
+
+## Inferences of `Any` or `AnyVal`
+
+name : **infer-any**  
+source : [InferAny](/rules/core/src/main/scala/com/typesafe/abide/core/InferAny.scala)
+
+The Scala compiler will often infer `Any` as the parameter to a polymorphic
+method. This is generally not what is desired and can lead to errors such as
+the following:
+
+```scala
+1L to 10L contains 3
+// => false
+```
+
+To avoid the warning in cases where this is intentional, simply specify the
+type explicitly:
+
+```scala
+1L to 10L contains[Any] 3
+1L to 10L contains (3: Any)
+```
+
+## Usages of potentially inaccessible types
+
+name : **inaccessible**  
+source : [Inaccessible](/rules/core/src/main/scala/com/typesafe/abide/core/Inaccessible.scala)
+
+Referencing private types as part of a public interface can lead to methods
+being impossible to implement in certain cases. For example in the following
+piece of code, YourTrait cannot be extended outside of the `foo` package, even
+though it is publicly accessible.
+
+```scala
+package foo {
+  private[foo] trait PrivateType { }
+
+  trait YourTrait {
+    def implementMe(f: Int => (String, PrivateType)): Unit
+  }
+}
+```
