@@ -108,4 +108,4 @@ name : **package-object-classes**
 source : [PackageObjectClasses](/rules/extra/src/main/scala/com/typesafe/abide/extra/PackageObjectClasses.scala)
 
 It is not recommended to define classes or objects inside of package objects,
-as they do not always work as expected.
+as they do not always work as expected.  See [SI-4344](https://issues.scala-lang.org/browse/SI-4344) for more details.
