@@ -16,7 +16,7 @@ class NullaryUnitTest extends TraversalTest {
       }
     """)
 
-    global.ask { () => apply(rule)(tree).isEmpty should be(true) }
+    global.ask { () => apply(rule)(tree).size should be(0) }
   }
 
   it should "not be valid when they return unit" in {
@@ -40,6 +40,17 @@ class NullaryUnitTest extends TraversalTest {
     global.ask { () => apply(rule)(tree).size should be(1) }
   }
 
+  it should "be valid if they have type parameters" in {
+    val tree = fromString("""
+      class Test {
+        def nullaryP[T]: Unit = ()
+        def nullaryP2[T, U] = println("hello")
+      }
+    """)
+
+    global.ask { () => apply(rule)(tree).size should be(0) }
+  }
+
   it should "not be valid for each nullary method returning unit" in {
     val tree = fromString("""
       class Test {
@@ -55,6 +66,6 @@ class NullaryUnitTest extends TraversalTest {
       }
     """)
 
-    global.ask { () => apply(rule)(tree).size should be(3) }
+    global.ask { () => apply(rule)(tree).size should be(2) }
   }
 }
