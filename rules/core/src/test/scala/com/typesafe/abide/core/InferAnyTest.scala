@@ -49,17 +49,6 @@ class InferAnyTest extends TraversalTest {
     global.ask { () => apply(rule)(tree).size should be(0) }
   }
 
-  it should "be valid if the type argument's lower bound is Any" in {
-    val tree = fromString("""
-      class Test {
-        def method[T >: Any](x: T) = x.toString
-        method(123)
-      }
-    """)
-
-    global.ask { () => apply(rule)(tree).size should be(0) }
-  }
-
   it should "not be valid only once for case classes" in {
     val tree = fromString("""
       case class Test(x: Boolean = 1L to 10L contains 3)
