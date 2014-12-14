@@ -3,39 +3,40 @@ package com.typesafe.abide.extra
 import scala.tools.abide._
 import scala.tools.abide.traversal._
 
-class InferAny(val context: Context) extends WarningRule {
+class InferAny(val context: Context) extends PathRule {
   import context.universe._
 
   val name = "infer-any"
 
-  case class Warning() extends RuleWarning {
-    val pos = ???
-    val message = ???
+  type Element = Unit
+
+  case class Warning(app: Tree, tpt: Tree) extends RuleWarning {
+    val pos = app.pos
+    val message = s"A type was inferred to be `${tpt.tpe.typeSymbol.name}`. This may indicate a programming error."
   }
 
+  def containsAny(t: Type) =
+    t.contains(typeOf[Any].typeSymbol) || t.contains(typeOf[AnyVal].typeSymbol)
+
+  def isInferredAny(tree: Tree) = tree match {
+    case tpt @ TypeTree() =>
+      tpt.original == null &&
+        (tpt.tpe.contains(typeOf[Any].typeSymbol) ||
+          tpt.tpe.contains(typeOf[AnyVal].typeSymbol))
+    case _ => false
+  }
+
+  def inSyntheticMethod = state.last.nonEmpty
+
   val step = optimize {
-    case app @ Apply(fn, args) if fn.symbol.isMethod =>
-      val tparams = fn.symbol.asMethod.typeParams
-      val argTypes = args.map(_.tpe)
+    case df @ DefDef(_, _, _, _, _, _) if df.symbol.isSynthetic => enter(())
 
-      val methodSym = fn.symbol.asMethod
-      println(s"Method ${fn.symbol.name} type arguments: ${methodSym.typeParams}")
-      println(s"Free types ${app.freeTypes}")
-      println(s"fn.tpe is ${fn.tpe}")
-      println(s"fn.tpe.typeSymbol.typeParams is ${fn.tpe.typeSymbol.typeParams}")
-      println(s"fn.tpe.typeSymbol.Is specialized ${fn.tpe.typeSymbol.isSpecialized}")
-      //println(s"fn.tpe.typeSymbol.toTypeConstructor ${fn.tpe.typeSymbol.toTypeConstructor}")
-      println(s"args.map(_.tpe) is ${args.map(_.tpe)}")
-
-      for (t <- args.map(_.tpe)) {
-        val typeSymbol = t.typeSymbol.asType
-        println("Type symbol info")
-        println(s"Is abstract type ${typeSymbol.isAbstractType}")
-        println(s"Is specialized ${typeSymbol.isSpecialized}")
-        println(s"Is parameter ${typeSymbol.isParameter}")
-        //println(s"Type signature ${typeSymbol.typeSignature}")
-        println(s"Is skolem ${typeSymbol.isSkolem}")
-        println(s"Type constr. ${typeSymbol.toTypeConstructor}")
+    case app @ Apply(TypeApply(fun, targs), args) if targs.exists(isInferredAny) && !inSyntheticMethod =>
+      val existsExplicitAny = args.map(_.tpe).exists { t =>
+        (t.contains(typeOf[Any].typeSymbol) || t.contains(typeOf[AnyVal].typeSymbol))
+      }
+      if (!existsExplicitAny) {
+        nok(Warning(app, targs.find(isInferredAny).get))
       }
   }
 

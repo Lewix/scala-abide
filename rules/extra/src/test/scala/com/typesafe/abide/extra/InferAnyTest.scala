@@ -7,7 +7,7 @@ class InferAnyTest extends TraversalTest {
 
   val rule = new InferAny(context)
 
-  "Inferences of Any" should "not be valid if not annotated" ignore {
+  "Inferences of Any" should "not be valid if not annotated" in {
     val tree = fromString("""
       class Test {
         List(1, 2, 3) contains "a"
@@ -18,34 +18,40 @@ class InferAnyTest extends TraversalTest {
     global.ask { () => apply(rule)(tree).size should be(2) }
   }
 
-  ignore should "not be valid in methods if not annotated" in {
+  it should "not be valid in methods if not annotated" in {
     val tree = fromString("""
       class Test {
         def get(x: => Option[Int]) = x getOrElse Some(5)
       }
     """)
 
-    println(scala.reflect.runtime.universe.showRaw(tree))
+    global.ask { () => apply(rule)(tree).size should be(1) }
+  }
+
+  it should "be valid if applied method is explicitly applied to Any" in {
+    val tree = fromString("""
+      class Test {
+        List(1, 2, 3) contains[Any] "a"
+        1L to 10L contains[Any] 3
+      }
+    """)
 
     global.ask { () => apply(rule)(tree).size should be(0) }
   }
 
-  ignore should "be valid if annotated with Any" in {
-    val tree = fromString("""
-      class Test {
-        List(1, 2, 3) contains ("a": Any)
-        1L to 10L contains (3: Any)
-      }
-    """)
-
-    global.ask { () => apply(rule)(tree).isEmpty should be(true) }
-  }
-
-  ignore should "not be valid in methods if annotated" in {
+  it should "be valid if the argument is explicitly ascribed Any" in {
     val tree = fromString("""
       class Test {
         def get(x: => Option[Int]) = x getOrElse (Some(5): Any)
       }
+    """)
+
+    global.ask { () => apply(rule)(tree).size should be(0) }
+  }
+
+  it should "not be valid only once for case classes" in {
+    val tree = fromString("""
+      case class Test(x: Boolean = 1L to 10L contains 3)
     """)
 
     global.ask { () => apply(rule)(tree).size should be(1) }
