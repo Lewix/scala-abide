@@ -1,7 +1,7 @@
-package com.typesafe.abide.extra
+package com.typesafe.abide.core
 
 import scala.tools.abide.traversal._
-import com.typesafe.abide.extra._
+import com.typesafe.abide.core._
 
 class InferAnyTest extends TraversalTest {
 
@@ -49,9 +49,31 @@ class InferAnyTest extends TraversalTest {
     global.ask { () => apply(rule)(tree).size should be(0) }
   }
 
+  it should "be valid if the type argument's lower bound is Any" in {
+    val tree = fromString("""
+      class Test {
+        def method[T >: Any](x: T) = x.toString
+        method(123)
+      }
+    """)
+
+    global.ask { () => apply(rule)(tree).size should be(0) }
+  }
+
   it should "not be valid only once for case classes" in {
     val tree = fromString("""
       case class Test(x: Boolean = 1L to 10L contains 3)
+    """)
+
+    global.ask { () => apply(rule)(tree).size should be(1) }
+  }
+
+  it should "not be valid if Any is inferred as part of a tuple" in {
+    val tree = fromString("""
+      class Test {
+        ((1L to 10L) zip (11L to 20L)).contains((3, 15L))
+        ((1L to 10L) zip (11L to 20L)).contains(((3: Any), 15L))
+      }
     """)
 
     global.ask { () => apply(rule)(tree).size should be(1) }

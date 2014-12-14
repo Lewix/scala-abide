@@ -1,4 +1,4 @@
-package com.typesafe.abide.extra
+package com.typesafe.abide.core
 
 import scala.tools.abide._
 import scala.tools.abide.traversal._
@@ -32,7 +32,11 @@ class InferAny(val context: Context) extends PathRule {
     case df @ DefDef(_, _, _, _, _, _) if df.symbol.isSynthetic => enter(())
 
     case app @ Apply(TypeApply(fun, targs), args) if targs.exists(isInferredAny) && !inSyntheticMethod =>
-      val existsExplicitAny = args.map(_.tpe).exists { t =>
+      val lowerBounds = fun.symbol.asMethod.typeParams.map(_.tpe).collect {
+        case targ @ TypeBounds(lower, _) if containsAny(lower) =>
+          lower
+      }
+      val existsExplicitAny = (args.map(_.tpe) ++ lowerBounds).exists { t =>
         (t.contains(typeOf[Any].typeSymbol) || t.contains(typeOf[AnyVal].typeSymbol))
       }
       if (!existsExplicitAny) {
