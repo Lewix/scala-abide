@@ -1,9 +1,9 @@
-package com.typesafe.abide.extra
+package com.typesafe.abide.core
 
 import scala.tools.abide.traversal._
-import com.typesafe.abide.extra._
+import com.typesafe.abide.core._
 
-class InaccessibleTest extends TraversalTest {
+class InaccessibleTest extends scala.tools.abide.traversal.TraversalTest {
 
   val rule = new Inaccessible(context)
 
