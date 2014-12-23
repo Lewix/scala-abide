@@ -146,3 +146,23 @@ type explicitly:
 1L to 10L contains[Any] 3
 1L to 10L contains (3: Any)
 ```
+
+## Usages of potentially inaccessible types
+
+name : **inaccessible**  
+source : [Inaccessible](/rules/core/src/main/scala/com/typesafe/abide/core/Inaccessible.scala)
+
+Referencing private types as part of a public interface can lead to methods
+being impossible to implement in certain cases. For example in the following
+piece of code, YourTrait cannot be extended outside of the `foo` package, even
+though it is publicly accessible.
+
+```scala
+package foo {
+  private[foo] trait PrivateType { }
+
+  trait YourTrait {
+    def implementMe(f: Int => (String, Bippy)): Unit
+  }
+}
+```
