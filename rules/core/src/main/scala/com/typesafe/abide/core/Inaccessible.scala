@@ -16,14 +16,18 @@ class Inaccessible(val context: Context) extends WarningRule {
 
   implicit class SymbolOps(sym: Symbol) {
     def isModuleOrModuleClass = sym.isModule || sym.isModuleClass
+
     def isTopLevel = sym.owner.isPackageClass
+
     def isLocalToBlock: Boolean = sym.owner.isTerm
+
     def isEffectivelyFinal: Boolean = (
       sym.isFinal
       || sym.hasPackageFlag
-      || isModuleOrModuleClass && isTopLevel //TODO: || !settings.overrideObjects
+      || isModuleOrModuleClass && isTopLevel
       || sym.isTerm && (sym.isPrivate || isLocalToBlock)
     )
+
     def isNotOverridden = {
       if (sym.owner.isClass) {
         val classOwner = sym.owner.asClass
@@ -36,7 +40,12 @@ class Inaccessible(val context: Context) extends WarningRule {
       }
       else false
     }
-    def isEffectivelyFinalOrNotOverridden: Boolean = isEffectivelyFinal || (sym.isTerm && /*TODO: !isDeferred &&*/ isNotOverridden)
+
+    def isDeferred = (sym.flags & Flag.DEFERRED) != 0
+
+    def isEffectivelyFinalOrNotOverridden: Boolean = {
+      isEffectivelyFinal || (sym.isTerm && !isDeferred && isNotOverridden)
+    }
 
     def isLessAccessibleThan(other: Symbol): Boolean = {
       val tb = sym.accessBoundary(sym.owner)
@@ -82,20 +91,20 @@ class Inaccessible(val context: Context) extends WarningRule {
           })
         }
 
-        // types of the value parameters
+        // Types of the value parameters
         mapParamss(member)(p => checkAccessibilityOfType(p.tpe))
-        // upper bounds of type parameters
+        // Upper bounds of type parameters
         member.typeParams.map(_.info.bounds.hi.widen) foreach checkAccessibilityOfType
       }
 
       def lessAccessibleSymsInType(other: Type, memberSym: Symbol): List[Symbol] = {
         val extras = other match {
           case TypeRef(pre, _, args) =>
-            // checking the prefix here gives us spurious errors on e.g. a private[process]
-            // object which contains a type alias, which normalizes to a visible type.
+            // Checking the prefix here gives us spurious errors on e.g. a
+            // private[process] object which contains a type alias, which
+            // normalizes to a visible type.
             args filterNot (_ eq NoPrefix) flatMap (tp => lessAccessibleSymsInType(tp, memberSym))
-          case _ =>
-            Nil
+          case _ => Nil
         }
         if (lessAccessible(other.typeSymbol, memberSym)) other.typeSymbol :: extras
         else extras
