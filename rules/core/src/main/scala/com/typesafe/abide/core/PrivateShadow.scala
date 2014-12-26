@@ -21,7 +21,7 @@ class PrivateShadow(val context: Context) extends WarningRule {
         qual.symbol.isClass) {
 
         qual.symbol.asClass.baseClasses.drop(1) foreach { parent =>
-          parent.typeSignature.declarations.filterNot(x => x.isPrivate || x.isLocalToBlock) foreach { m2 =>
+          parent.typeSignature.declarations.filterNot(x => x.isPrivate || x.isLocalToThis) foreach { m2 =>
             if (sym.name == m2.name &&
               m2.isMethod &&
               m2.asMethod.isGetter &&
