@@ -211,3 +211,19 @@ In this example `c.toString()` will always print `0`, even after calling `c.incr
   }
 }
 ```
+
+## Avoid overloaded polymorphic implicit methods
+
+name : **poly-implicit-overload**  
+source : [PolyImplicitOverload](/rules/core/src/main/scala/com/typesafe/abide/core/PolyImplicitOverload.scala)
+
+Overloaded polymorphic implicit methods are not visible as view bounds and should therefore be avoided.  For example, the following will not compile because no implicit view is available from `List[Int]` to `Map[Int, Int]`:
+
+```scala
+implicit def imp1[T](x: List[T]): Map[T, T] = Map()
+implicit def imp1[T](x: Set[T]): Map[T, T] = Map()
+
+def f[T <% Map[Int, Int]](x: T) = println("f")
+
+f[List[Int]](List(3)) // No implicit view available!
+```
