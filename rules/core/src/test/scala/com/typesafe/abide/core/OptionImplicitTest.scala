@@ -38,25 +38,6 @@ class OptionImplicitTest extends TraversalTest {
     global.ask { () => apply(rule)(tree).size should be(1) }
   }
 
-  it should "be valid when inside a case" in {
-    val tree = fromString("""
-      class Test {
-        class A
-        class B
-        implicit def aToB(a: A): B = new B()
-
-        val nullA: A = null
-        def identityOptionB(x: Option[B]) = x
-        1 match {
-          case _ if identityOptionB(Option(nullA)) == None => true
-          case _ => false
-        }
-      }
-    """)
-
-    global.ask { () => apply(rule)(tree).isEmpty should be(true) }
-  }
-
   it should "be valid when no implicit view is applied to its argument" in {
     val tree = fromString("""
       class Test {

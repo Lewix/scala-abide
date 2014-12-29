@@ -3,12 +3,10 @@ package com.typesafe.abide.core
 import scala.tools.abide._
 import scala.tools.abide.traversal._
 
-class OptionImplicit(val context: Context) extends ScopingRule {
+class OptionImplicit(val context: Context) extends WarningRule {
   import context.universe._
 
   type Owner = Boolean
-
-  def inPattern = state.scope.headOption.nonEmpty
 
   val name = "option-implicit"
 
@@ -17,9 +15,7 @@ class OptionImplicit(val context: Context) extends ScopingRule {
   }
 
   val step = optimize {
-    case CaseDef(_, _, _) => enter(true)
-
-    case app @ Apply(tap @ TypeApply(q"scala.Option.apply", targs), List(view: ApplyImplicitView)) if !inPattern =>
+    case app @ Apply(tap @ TypeApply(q"scala.Option.apply", targs), List(view: ApplyImplicitView)) =>
       nok(Warning(app.pos, view))
   }
 }
