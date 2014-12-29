@@ -227,3 +227,11 @@ def f[T <% Map[Int, Int]](x: T) = println("f")
 
 f[List[Int]](List(3)) // No implicit view available!
 ```
+
+## Avoid selection of fields from subclasses of `DelayedInit`
+
+name : **delayed-init-select**  
+source : [DelayedInitSelect](/rules/core/src/main/scala/com/typesafe/abide/core/DelayedInitSelect.scala)
+
+Selecting a field from a subclass of `DelayedInit` such as `App` will yield
+`null` if the object is not initialised, which can be confusing.
