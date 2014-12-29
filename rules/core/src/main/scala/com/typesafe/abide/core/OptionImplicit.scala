@@ -6,8 +6,6 @@ import scala.tools.abide.traversal._
 class OptionImplicit(val context: Context) extends WarningRule {
   import context.universe._
 
-  type Owner = Boolean
-
   val name = "option-implicit"
 
   case class Warning(val pos: Position, view: ApplyImplicitView) extends RuleWarning {

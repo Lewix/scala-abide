@@ -238,7 +238,7 @@ Selecting a field from a subclass of `DelayedInit` such as `App` will yield
 
 ## Avoid implicit conversions in `Option.apply`
 
-name : **option-implicit**
+name : **option-implicit**  
 source : [OptionImplicit](/rules/core/src/main/scala/com/typesafe/abide/core/OptionImplicit.scala)
 
 Applying an implicit conversion to the argument to `Option.apply` is often an error. If the argument was `null` before the implicit conversion, it might not be `null` afterwards. For example in the code below an implicit conversion from `A` to `B` is applied. The argument to `Option.apply` thus becomes a non-null instance of `B`, so `optionB` is unexpectedly not `None`.
