@@ -18,14 +18,12 @@ class TypeParameterShadowTest extends TraversalTest {
     global.ask { () => apply(rule)(tree).size should be(1) }
   }
 
-  ignore should "not be valid if it shadows another type when nested" in {
+  it should "not be valid if it shadows another type when nested" in {
     val tree = fromString("""
       trait Test {
         def foobar[N[M[List[_]]]] = 1 // warn
       }
     """)
-
-    println(scala.reflect.runtime.universe.showRaw(tree))
 
     global.ask { () => apply(rule)(tree).size should be(1) }
   }
@@ -51,7 +49,7 @@ class TypeParameterShadowTest extends TraversalTest {
     global.ask { () => apply(rule)(tree).size should be(1) }
   }
 
-  ignore should "not be valid if it shadows another type when nested" in {
+  it should "not be valid if it shadows another type when nested" in {
     val tree = fromString("""
       trait Test {
         type E[M[List[_]]] = Int // warn
@@ -84,7 +82,7 @@ class TypeParameterShadowTest extends TraversalTest {
     global.ask { () => apply(rule)(tree).size should be(2) }
   }
 
-  ignore should "not be valid if it shadows another type when nested" in {
+  it should "not be valid if it shadows another type when nested" in {
     val tree = fromString("""
       class C[M[List[_]]] // warn
     """)
@@ -98,5 +96,13 @@ class TypeParameterShadowTest extends TraversalTest {
     """)
 
     global.ask { () => apply(rule)(tree).size should be(0) }
+  }
+
+  it should "not be valid if the parameters's name is List" in {
+    val tree = fromString("""
+      class G[List] // warn
+    """)
+
+    global.ask { () => apply(rule)(tree).size should be(1) }
   }
 }

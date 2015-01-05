@@ -8,14 +8,20 @@ class TypeParameterShadow(val context: Context) extends ScopingRule {
 
   val name = "type-parameter-shadow"
 
-  case class Warning(tp: TypeDef, sym1: Symbol, sym2: Symbol) extends RuleWarning {
+  case class Warning(tp: TypeDef, sym1: Symbol, sym2: Option[Symbol]) extends RuleWarning {
     val pos: Position = tp.pos
-    val message: String = s"Type parameter ${tp.name} defined in $sym1 shadows $sym2 defined in ${sym2.owner}. You may want to rename your type parameter, or possibly remove it."
+    val message: String =
+      if (sym2.nonEmpty) s"Type parameter ${tp.name} defined in $sym1 shadows ${sym2.get} defined in ${sym2.get.owner}. You may want to rename your type parameter, or possibly remove it."
+      else s"Type parameter ${tp.name} defined in $sym1 shadows predefined type ${tp.name}"
+
   }
 
   // State is a pair of List[Symbol] (the declared type parameters) and Boolean
   // (true if the declarer is a class or method or type member)
   type Owner = Symbol
+
+  // Any of the types in scala.Predef could be shadowed
+  val predefTypes = List("List") ++ scala.reflect.runtime.universe.typeOf[scala.Predef.type].declarations.filter(_.isType).map(_.name.toString)
 
   def getDeclaration(tp: TypeDef, scope: List[Owner]) = scope.find { sym =>
     sym.name == tp.name && sym.isType
@@ -28,13 +34,16 @@ class TypeParameterShadow(val context: Context) extends ScopingRule {
   def warnTypeParameterShadow(tparams: List[TypeDef], sym: Symbol) = {
     if (!sym.isSynthetic) {
       val tt = tparams.filter(_.name != typeNames.WILDCARD).foreach { tp =>
+        if (predefTypes.contains(tp.name.toString)) nok(Warning(tp, sym, None))
         // We don't care about type params shadowing other type params in the same declaration
-        getDeclaration(tp, enclClassOrMethodOrTypeMemberScope) foreach { prevTp =>
-          if (prevTp != tp.symbol) {
-            println("Warn")
-            nok(Warning(tp, sym, prevTp))
+        else {
+          getDeclaration(tp, enclClassOrMethodOrTypeMemberScope) foreach { prevTp =>
+            if (prevTp != tp.symbol) {
+              nok(Warning(tp, sym, Some(prevTp)))
+            }
           }
         }
+
       }
     }
   }
