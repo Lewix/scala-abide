@@ -98,9 +98,17 @@ class TypeParameterShadowTest extends TraversalTest {
     global.ask { () => apply(rule)(tree).size should be(0) }
   }
 
-  it should "not be valid if the parameters's name is List" in {
+  it should "not be valid if the parameter's name is List" in {
     val tree = fromString("""
       class G[List] // warn
+    """)
+
+    global.ask { () => apply(rule)(tree).size should be(1) }
+  }
+
+  it should "not be valid if the parameter's name is Byte" in {
+    val tree = fromString("""
+      class F[Byte] // warn
     """)
 
     global.ask { () => apply(rule)(tree).size should be(1) }
