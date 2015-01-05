@@ -251,3 +251,10 @@ implicit def aToB(a: A): B = new B()
 val nullA: A = null
 val optionB: Option[B] = Option(nullA)
 ```
+
+## Warn on strings which appear to be missing interpolators
+
+name : **missing-interpolator**  
+source : [MissingInterpolator](/rules/core/src/main/scala/com/typesafe/abide/core/MissingInterpolator.scala)
+
+It is easy to forgot the interpolator symbol when writing string interpolations, so this rule will warn when it finds strings with no interpolators which appear to be destined for interpolation.
