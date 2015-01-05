@@ -113,4 +113,15 @@ class TypeParameterShadowTest extends TraversalTest {
 
     global.ask { () => apply(rule)(tree).size should be(1) }
   }
+
+  it should "not be valid if it shadows a type alias" in {
+    val tree = fromString("""
+      object TypeAliasTest {
+        type T = Int
+        class F[T] // warn
+      }
+    """)
+
+    global.ask { () => apply(rule)(tree).size should be(1) }
+  }
 }

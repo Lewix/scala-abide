@@ -70,6 +70,3 @@ class TypeParameterShadow(val context: Context) extends ScopingRule {
       enterAll(tparams.map(_.symbol))
   }
 }
-
-//TODO: test package object with methods shadowed by tparams
-//TODO: test shadowed type aliases
