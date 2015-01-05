@@ -258,3 +258,16 @@ name : **missing-interpolator**
 source : [MissingInterpolator](/rules/core/src/main/scala/com/typesafe/abide/core/MissingInterpolator.scala)
 
 It is easy to forgot the interpolator symbol when writing string interpolations, so this rule will warn when it finds strings with no interpolators which appear to be destined for interpolation.
+
+## Warn when type parameters shadow existing types
+
+name : **type-parameter-shadow**  
+source : [TypeParameterShadow](/rules/core/src/main/scala/com/typesafe/abide/core/TypeParameterShadow.scala)
+
+Declaring a type parameter with the same name as an existing type, such as `Byte`, will result in that type being shadowed. This leads to confusing errors where the type `Byte` is not actually `scala.Byte`:
+
+```scala
+def fail[String](f: (String) => Unit) = f("")
+```
+
+The code above results in a type error because `String` is not `java.lang.String`.
