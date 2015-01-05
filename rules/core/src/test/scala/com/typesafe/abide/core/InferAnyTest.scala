@@ -57,14 +57,14 @@ class InferAnyTest extends TraversalTest {
     global.ask { () => apply(rule)(tree).size should be(1) }
   }
 
-  it should "not be valid if Any is inferred as part of a tuple" in {
+  "Inferences of types other than Any" should "be valid" in {
     val tree = fromString("""
       class Test {
-        ((1L to 10L) zip (11L to 20L)).contains((3, 15L))
-        ((1L to 10L) zip (11L to 20L)).contains(((3: Any), 15L))
+        def method[T](x: T) = x
+        method(null.asInstanceOf[Class[Any]])
       }
     """)
 
-    global.ask { () => apply(rule)(tree).size should be(1) }
+    global.ask { () => apply(rule)(tree).size should be(0) }
   }
 }

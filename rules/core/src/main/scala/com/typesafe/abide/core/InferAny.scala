@@ -20,7 +20,7 @@ class InferAny(val context: Context) extends PathRule {
   def enterSyntheticMethod() = enter(())
 
   def containsAny(t: Type) =
-    t.contains(typeOf[Any].typeSymbol) || t.contains(typeOf[AnyVal].typeSymbol)
+    (t =:= typeOf[Any]) || (t =:= typeOf[AnyVal])
 
   def isInferredAny(tree: Tree) = tree match {
     case tpt @ TypeTree() => tpt.original == null && containsAny(tpt.tpe)
