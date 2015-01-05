@@ -1,7 +1,7 @@
-package com.typesafe.abide.extra
+package com.typesafe.abide.core
 
 import scala.tools.abide.traversal._
-import com.typesafe.abide.extra._
+import com.typesafe.abide.core._
 
 class TypeParameterShadowTest extends TraversalTest {
 
