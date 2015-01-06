@@ -77,6 +77,9 @@ class MissingInterpolator(val context: Context) extends ScopingRule {
       // Add this template's declarations as plausible
       enterPlausible(t.tpe.declarations)
 
+    case d @ DefDef(_, _, _, vparamss, _, _) =>
+      enterPlausible(vparamss.flatten.map(_.symbol))
+
     case p @ PackageDef(pid, stats) =>
       enterImplausible(pid.tpe.members)
       enterPlausible(pid.tpe.members)

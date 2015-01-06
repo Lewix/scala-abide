@@ -206,4 +206,14 @@ class MissingInterpolatorTest extends TraversalTest {
 
     global.ask { () => apply(rule)(tree).size should be(2) }
   }
+
+  it should "not be valid if it contains a quoted name of a method parameter" in {
+    val tree = fromString("""
+      class Test {
+        def method(arg: Int) = "method's argument is $arg"
+      }
+    """)
+
+    global.ask { () => apply(rule)(tree).size should be(1) }
+  }
 }
